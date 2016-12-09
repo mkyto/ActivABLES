@@ -60,9 +60,12 @@ void loop () {
   for (int i = 0; i < 3; i++) {
 
     // First value = row number
-    values = "";
-    values += i;
-    values += " ";
+    // values = "";
+    // values += i;
+    // values += " ";
+
+    // Sum of all pressure values
+    value = 0;
 
     for (int ii = 0; ii < 6; ii++) {
       // take the latchPin low so
@@ -76,19 +79,22 @@ void loop () {
       digitalWrite(latchPin, HIGH);
       // pause before next value:
       delay(20);
-      values += analogRead(i);
+      value += (int) analogRead(i);
 
       // Spacing between values
-      if(ii < 5) {
-        values +=  " ";
-      }
+      // if(ii < 5) {
+      //   values +=  " ";
+      // }
     }
     // Send values row-by-row
-    Serial.println(values);
+    // Serial.println(values);
 
     // Send gyro data in-between
-    loadGyroValues();
-    Serial.println(values);
+    // loadGyroValues();
+    // Serial.println(values);
+
+    // Send sum of all pressure
+    Serial.println(value);
   }
 }
 
