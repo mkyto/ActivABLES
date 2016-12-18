@@ -2,10 +2,7 @@
    Read pressure data via shift register & angle from gyro
    Based on: https://www.arduino.cc/en/Tutorial/ShftOut11
         and: https://learn.adafruit.com/adafruit-bno055-absolute-orientation-sensor/wiring-and-test
-
-
    @author wbock
-
 */
 
 #include <Wire.h>
@@ -40,7 +37,15 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
 
-  Serial.begin(9600);
+   Serial.begin(115200);
+  Serial1.begin(115200);
+      
+      //while (!Serial) {
+      //; // wait for serial port to connect. Needed for Leonardo only
+     //}
+          while (!Serial1) {
+      ; // wait for serial port to connect. Needed for Leonardo only
+     }
 
   /* Initialise the sensor */
   if(!bno.begin())
@@ -86,15 +91,22 @@ void loop () {
       //   values +=  " ";
       // }
     }
+
+     Serial1.print("p:");
+     Serial1.print(value);
+     
+     Serial.print("p:");
+     Serial.print(value);
+
+     
     // Send values row-by-row
     // Serial.println(values);
 
     // Send gyro data in-between
-    // loadGyroValues();
+     loadGyroValues();
     // Serial.println(values);
-
+  delay(5);
     // Send sum of all pressure
-    Serial.println(value);
   }
 }
 
@@ -103,13 +115,34 @@ void loadGyroValues() {
   /* Get a new sensor event */ 
   sensors_event_t event; 
   bno.getEvent(&event);
-  
-  /* Display the floating point data */
-  values = "3 ";
-  values += roundf(event.orientation.x);
-  values += " ";
-  values += roundf(event.orientation.y);
-  values += " ";
-  values += roundf(event.orientation.z);
-}
 
+  Serial.print(",x:");
+  Serial.print(event.orientation.x, 0);
+  
+  Serial.print(",y:");
+  Serial.print(event.orientation.y, 0);
+
+  Serial1.print(",y:");
+  Serial1.print(event.orientation.y, 0);
+  
+  Serial.print(",z:");
+  Serial.print(event.orientation.z, 0);
+  Serial1.print(",z:");
+  Serial1.print(event.orientation.z, 0);
+  
+  //Serial.println("");
+
+   Serial.print(",");
+  Serial1.print(",");
+  
+  Serial.print("\n");
+  Serial1.print("\n");
+
+  if (Serial1.peek() != -1) {
+    Serial1.print("Read: ");
+    do {
+      Serial1.print((char) Serial1.read());
+    } while (Serial1.peek() != -1);
+    Serial1.print("\n");
+  }
+}
