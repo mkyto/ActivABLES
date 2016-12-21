@@ -95,11 +95,17 @@ void loop () {
 
 void updateShiftChannel() {
 
-  digitalWrite(latchPin, LOW);
-  // shift out the bits:
-  shiftOut(serialPin, clockPin, MSBFIRST, channels[currentChan]);
-  //take the latch pin high so the LEDs will light up:
-  digitalWrite(latchPin, HIGH);
+  if(currentShiftChan < 8) {
+    digitalWrite(latchPin, LOW);
+    // shift out the bits:
+    shiftOut(serialPin, clockPin, MSBFIRST, channels[currentShiftChan]);
+    //take the latch pin high so the LEDs will light up:
+    digitalWrite(latchPin, HIGH);
+  } else if (currentShiftChan == 9) {
+    // Extra DO pin, not implemented yet
+  } else if (currentShiftChan == 10) {
+    // Extra DO pin, not implemented yet
+  }
 }
 
 
