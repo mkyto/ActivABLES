@@ -3,7 +3,6 @@
    Based on: https://www.arduino.cc/en/Tutorial/ShftOut11
         and: https://learn.adafruit.com/adafruit-bno055-absolute-orientation-sensor/wiring-and-test
 
-
    @author wbock
 
 */
@@ -23,44 +22,46 @@ int clockPin = 10;
 // Pin connected to DS of 74HC595
 int serialPin = 9;
 
-// Multiplexer channel select bits
+// iterator and channels for addressing shift register
+int currentShiftChan = 0;
+int shiftChannels[] = {0, 1, 2, 4, 8, 16, 32, 64};
+
+// Multiplexer channel select ports
 int muxPin0 = 14;
 int muxPin1 = 15;
 int muxPin2 = 16;
 
-
-int r0 = 0;      //value of select pin at the 4051 (s0)
-int r1 = 0;      //value of select pin at the 4051 (s1)
-int r2 = 0;      //value of select pin at the 4051 (s2)
+// Multiplexer channel select bits
+int muxBit0 = 0;
+int muxBit1 = 0;
+int muxBit2 = 0;
 
 // Analog pins for reading input
 int muxPinData = 7;
 
-// iterator and channels for addressing shift register
-int currentChan = 0;
-int chanels[] = {0, 1, 2, 4, 8, 16, 32, 64};
+// iterator for addressing multiplexer
+int currentMuxChan = 0;
 
 // Temp vars
 int value = 0; //Current read value
 String values = ""; //Set of all values
 
+
 void setup() {
-  //set pins to output so you can control the shift register
+  
+  //set pins to output for shift register
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(serialPin, OUTPUT);
 
-  digitalWrite(latchPin, LOW);
-      
-  // shift out the bits:
-  shiftOut(serialPin, clockPin, MSBFIRST, 1);
+  updateShiftChannel();
 
-  //take the latch pin high so the LEDs will light up:
-  digitalWrite(latchPin, HIGH);
+  //set pins to output for multiplexer
+  pinMode(muxPin0, OUTPUT);
+  pinMode(muxPin1, OUTPUT);
+  pinMode(muxPin2, OUTPUT);
 
-  pinMode(muxPin0, OUTPUT);    // s0
-  pinMode(muxPin1, OUTPUT);    // s1
-  pinMode(muxPin2, OUTPUT);    // s2
+  updateMuxChannel();
 
   Serial.begin(9600);
 
@@ -77,22 +78,42 @@ void setup() {
 //  bno.setExtCrystalUse(true);
 }
 
+
 void loop () {
+
+  values = "";
+  values += i;
+  values += " ";
 
   digitalWrite(muxPin0, HIGH);
   digitalWrite(muxPin1, LOW);
   digitalWrite(muxPin2, LOW);
   delay(200);
   Serial.println(analogRead(muxPinData));
-
-  digitalWrite(muxPin0, LOW);
-  digitalWrite(muxPin1, HIGH);
-  digitalWrite(muxPin2, LOW);
-  delay(200);
-  Serial.println(analogRead(muxPinData));
 }
 
-void 
+
+void updateShiftChannel() {
+
+  digitalWrite(latchPin, LOW);
+  // shift out the bits:
+  shiftOut(serialPin, clockPin, MSBFIRST, channels[currentChan]);
+  //take the latch pin high so the LEDs will light up:
+  digitalWrite(latchPin, HIGH);
+}
+
+
+void updateMuxChannel() {
+  
+  muxBit0 = bitRead(currentMuxChan, 0);
+  muxBit1 = bitRead(currentMuxChan, 1); 
+  muxBit2 = bitRead(currentMuxChan, 2);
+
+  digitalWrite(muxPin0, muxBit0);
+  digitalWrite(muxPin1, muxBit1);
+  digitalWrite(muxPin2, muxBit2);
+}
+
 
 void loadGyroValues() {
   
