@@ -24,9 +24,9 @@ int serialPin = 9;
 
 // iterator and channels for addressing shift register
 int currentShiftChan = 0;
-int shiftChannels[] = {0, 1, 2, 4, 8, 16, 32, 64};
+int shiftChans[] = {1, 2, 4, 8, 16, 32, 64, 128};
 
-// Multiplexer channel select ports
+// Multiplexer Channel select ports
 int muxPin0 = 14;
 int muxPin1 = 15;
 int muxPin2 = 16;
@@ -54,14 +54,14 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   pinMode(serialPin, OUTPUT);
 
-  updateShiftChannel();
+  updateShiftChan();
 
   //set pins to output for multiplexer
   pinMode(muxPin0, OUTPUT);
   pinMode(muxPin1, OUTPUT);
   pinMode(muxPin2, OUTPUT);
 
-  updateMuxChannel();
+  updateMuxChan();
 
   Serial.begin(9600);
 
@@ -80,25 +80,34 @@ void setup() {
 
 
 void loop () {
-
+  
   values = "";
-  values += i;
-  values += " ";
+  for(currentShiftChan = 0; currentShiftChan < 8; currentShiftChan++) {
+    updateShiftChan();
+    values += currentShiftChan;
+    values += " ";
 
-  digitalWrite(muxPin0, HIGH);
-  digitalWrite(muxPin1, LOW);
-  digitalWrite(muxPin2, LOW);
-  delay(200);
-  Serial.println(analogRead(muxPinData));
+    for(currentMuxChan = 0; currentMuxChan < 8; currentMuxChan++) {
+      updateMuxChan();
+      values += analogRead(muxPinData);
+
+      if(currentMuxChan < 7) {
+        values += " ";
+      }
+      delay(20);
+    }
+    values += "\n";
+  }
+  Serial.println(values);
 }
 
 
-void updateShiftChannel() {
+void updateShiftChan() {
 
   if(currentShiftChan < 8) {
     digitalWrite(latchPin, LOW);
     // shift out the bits:
-    shiftOut(serialPin, clockPin, MSBFIRST, channels[currentShiftChan]);
+    shiftOut(serialPin, clockPin, MSBFIRST, shiftChans[currentShiftChan]);
     //take the latch pin high so the LEDs will light up:
     digitalWrite(latchPin, HIGH);
   } else if (currentShiftChan == 9) {
@@ -109,7 +118,7 @@ void updateShiftChannel() {
 }
 
 
-void updateMuxChannel() {
+void updateMuxChan() {
   
   muxBit0 = bitRead(currentMuxChan, 0);
   muxBit1 = bitRead(currentMuxChan, 1); 
