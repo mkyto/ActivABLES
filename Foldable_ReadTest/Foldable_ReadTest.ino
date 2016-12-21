@@ -21,7 +21,7 @@ int latchPin = 8;
 // Pin connected to SH_CP of 74HC595
 int clockPin = 10;
 // Pin connected to DS of 74HC595
-int dataPin = 9;
+int serialPin = 9;
 
 // Multiplexer channel select bits
 int muxPin0 = 14;
@@ -34,9 +34,11 @@ int r1 = 0;      //value of select pin at the 4051 (s1)
 int r2 = 0;      //value of select pin at the 4051 (s2)
 
 // Analog pins for reading input
-int muxPinData = 6;
+int muxPinData = 7;
 
-int chanels[] = {1, 2, 4, 8, 16, 32, 64};
+// iterator and channels for addressing shift register
+int currentChan = 0;
+int chanels[] = {0, 1, 2, 4, 8, 16, 32, 64};
 
 // Temp vars
 int value = 0; //Current read value
@@ -46,19 +48,19 @@ void setup() {
   //set pins to output so you can control the shift register
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
-  pinMode(dataPin, OUTPUT);
-
-  digitalWrite(muxPin0, 0);
-  digitalWrite(muxPin1, 0);
-  digitalWrite(muxPin2, 0);
+  pinMode(serialPin, OUTPUT);
 
   digitalWrite(latchPin, LOW);
       
   // shift out the bits:
-  shiftOut(dataPin, clockPin, MSBFIRST, 1);
+  shiftOut(serialPin, clockPin, MSBFIRST, 1);
 
   //take the latch pin high so the LEDs will light up:
   digitalWrite(latchPin, HIGH);
+
+  pinMode(muxPin0, OUTPUT);    // s0
+  pinMode(muxPin1, OUTPUT);    // s1
+  pinMode(muxPin2, OUTPUT);    // s2
 
   Serial.begin(9600);
 
@@ -77,12 +79,20 @@ void setup() {
 
 void loop () {
 
-  
-      
+  digitalWrite(muxPin0, HIGH);
+  digitalWrite(muxPin1, LOW);
+  digitalWrite(muxPin2, LOW);
   delay(200);
   Serial.println(analogRead(muxPinData));
 
+  digitalWrite(muxPin0, LOW);
+  digitalWrite(muxPin1, HIGH);
+  digitalWrite(muxPin2, LOW);
+  delay(200);
+  Serial.println(analogRead(muxPinData));
 }
+
+void 
 
 void loadGyroValues() {
   
