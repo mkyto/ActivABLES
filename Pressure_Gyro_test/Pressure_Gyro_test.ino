@@ -8,6 +8,7 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
+#include <Adafruit_NeoPixel.h>
 #include <utility/imumaths.h>
 #include <math.h>
 
@@ -19,6 +20,20 @@ int latchPin = 8;
 int clockPin = 10;
 ////Pin connected to DS of 74HC595
 int dataPin = 9;
+
+//RGB Pins
+int buttonPin = 7; // Button on spoeka
+int ledPin = 6;  // Serial data for LEDs
+
+// RGB values
+int ledG = 0;
+int ledR = 0;
+int ledB = 0;
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(2, ledPin, NEO_GRB + NEO_KHZ800);
+
+// pressure counters
+boolean active = false;
+int counter = 0;
 
 // Analog pins for reading input
 int row1 = 0; // lower row (closest to output ports)
@@ -36,6 +51,11 @@ void setup() {
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
+
+  // start RGB and turn off
+  pinMode(buttonPin,INPUT);
+  strip.begin();
+  strip.show();
 
    Serial.begin(115200);
   Serial1.begin(115200);
@@ -61,6 +81,11 @@ void setup() {
 }
 
 void loop () {
+
+    // Update LED colors
+    strip.setPixelColor(0, ledG, ledR, ledB);
+    strip.setPixelColor(1, ledG, ledR, ledB);
+    strip.show();
 
   for (int i = 0; i < 3; i++) {
 
@@ -90,6 +115,21 @@ void loop () {
       // if(ii < 5) {
       //   values +=  " ";
       // }
+    }
+
+    // Raise Green value by 10 for each press
+    if ( i == 2) {
+      if(active) {
+        if (value < 300) {
+          active = false;
+          counter++;
+          ledG = counter*10;
+        }
+      } else if(!active) {
+         if (value > 300) {
+          active = true;
+        }
+      }
     }
 
      Serial1.print("p:");
